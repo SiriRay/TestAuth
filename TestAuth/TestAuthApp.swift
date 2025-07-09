@@ -26,14 +26,28 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         FirebaseApp.configure()
         
+        // 1. Set UNUserNotificationCenter delegate
+           UNUserNotificationCenter.current().delegate = self
+
+           // 2. Request permission for alerts/sounds/badges
+           UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+             if let err = error {
+               print("❌ Notification auth error:", err)
+             }
+           }
+
+           // 3. Actually register with APNs
+           application.registerForRemoteNotifications()
+        
         return true
     }
-    
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    // Called when APNs has given us a device token
+      func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        // Let Firebase Auth know this device’s token
         Auth.auth().setAPNSToken(deviceToken, type: .sandbox)
-        print("Device token received: \(deviceToken.map { String(format: "%02x", $0) }.joined())")
-    }
-    
+        print("✅ APNs device token:", deviceToken.map { String(format: "%02x", $0) }.joined())
+      }
+
     func application(_ application: UIApplication,
         didReceiveRemoteNotification notification: [AnyHashable : Any],
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
