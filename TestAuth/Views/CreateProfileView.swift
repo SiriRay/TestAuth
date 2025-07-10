@@ -59,7 +59,7 @@ struct CreateProfileView: View {
     }
     .padding()
     .sheet(isPresented: $vm.showImagePicker) {
-      ImagePicker(image: $vm.profileImage)
+      ImagePickerView(image: $vm.profileImage)
     }
     // when save succeeds, dismiss & move to Home:
     .onChange(of: vm.didSaveProfile) { success in
@@ -69,4 +69,13 @@ struct CreateProfileView: View {
       }
     }
   }
+}
+
+
+#Preview {
+    // show the profile-creation screen
+    CreateProfileView(
+        showCreateProfile: .constant(true),
+        isAuthenticated: .constant(false)
+    )
 }

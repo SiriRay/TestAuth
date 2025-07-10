@@ -4,7 +4,7 @@ import SwiftUI
 import Firebase
 import FirebaseAuth
 
-struct HomeView: View {
+struct MainDashboardView: View {
     var body: some View {
         VStack{
             Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
@@ -31,5 +31,5 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    MainDashboardView()
 }

@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct ImagePicker: UIViewControllerRepresentable {
+struct ImagePickerView: UIViewControllerRepresentable {
     @Binding var image: UIImage?
     @Environment(\.presentationMode) var presentationMode
 
@@ -26,8 +26,8 @@ struct ImagePicker: UIViewControllerRepresentable {
     }
 
     class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-        let parent: ImagePicker
-        init(_ parent: ImagePicker) { self.parent = parent }
+        let parent: ImagePickerView
+        init(_ parent: ImagePickerView) { self.parent = parent }
         func imagePickerController(
             _ picker: UIImagePickerController,
             didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]
@@ -39,3 +39,9 @@ struct ImagePicker: UIViewControllerRepresentable {
         }
     }
 }
+
+#Preview {
+    // binding nil just shows the picker UI in the canvas
+    ImagePickerView(image: .constant(nil))
+}
+

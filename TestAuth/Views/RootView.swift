@@ -4,14 +4,14 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 
-struct InitialView: View {
+struct RootView: View {
   @State private var isAuthenticated = (Auth.auth().currentUser != nil)
   @State private var showCreateProfile = false
 
   var body: some View {
     VStack {
       if isAuthenticated {
-        HomeView()
+        MainDashboardView()
       }
       else if showCreateProfile {
         CreateProfileView(
@@ -20,7 +20,7 @@ struct InitialView: View {
         )
       }
       else {
-        ContentView(
+        LoginOrSignupView(
           isAuthenticated:    $isAuthenticated,
           showCreateProfile:  $showCreateProfile
         )
@@ -50,3 +50,8 @@ struct InitialView: View {
     }
   }
 }
+
+#Preview {
+    RootView()
+}
+

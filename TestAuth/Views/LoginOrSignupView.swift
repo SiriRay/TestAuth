@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct LoginOrSignupView: View {
   @Binding var isAuthenticated: Bool
   @Binding var showCreateProfile: Bool
   @StateObject private var vm = AuthViewModel()
@@ -48,3 +48,12 @@ struct ContentView: View {
     }
   }
 }
+
+#Preview {
+    // start in the “not authenticated” flow
+    LoginOrSignupView(
+        isAuthenticated: .constant(false),
+        showCreateProfile: .constant(false)
+    )
+}
+

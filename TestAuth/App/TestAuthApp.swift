@@ -6,7 +6,7 @@ struct TestAuthApp: App {
 
     var body: some Scene {
         WindowGroup {
-            InitialView()
+            RootView()
         }
     }
 }
