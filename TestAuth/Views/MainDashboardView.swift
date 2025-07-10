@@ -1,34 +1,53 @@
-
-
 import SwiftUI
-import Firebase
 import FirebaseAuth
 
 struct MainDashboardView: View {
+    @State private var isMenuOpen = false
+
     var body: some View {
-        VStack{
-            Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-            
-            Button{
-                Task{
-                    do{
-                        try await logout()
+        NavigationView {
+            ZStack {
+                // — Main Content, now vertically centered —
+                VStack {
+                    Spacer()       // push content down
+                    Text("hello world")
+                        .font(.largeTitle)
+                        .foregroundColor(.black)
+                        .multilineTextAlignment(.center)
+                    Spacer()       // push content up
+                }
+                .disabled(isMenuOpen)
+
+                // — Side Menu Overlay —
+                SideMenuView(isOpen: $isMenuOpen, logoutAction: logout)
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if !isMenuOpen {
+                        Button {
+                            withAnimation { isMenuOpen = true }
+                        } label: {
+                            Image(systemName: "line.horizontal.3")
+                                .imageScale(.large)
+                                .foregroundColor(.black)
+                        }
                     }
                 }
-                } label: {
-                    Text("Log Out").padding(8)
-                }.buttonStyle(.borderedProminent)
-
-                
-        
             }
-            .padding()
         }
-    
-    func logout() async throws{
+    }
+
+    func logout() async throws {
         try Auth.auth().signOut()
     }
 }
+
+struct MainDashboardView_Previews: PreviewProvider {
+    static var previews: some View {
+        MainDashboardView()
+    }
+}
+
 
 #Preview {
     MainDashboardView()
