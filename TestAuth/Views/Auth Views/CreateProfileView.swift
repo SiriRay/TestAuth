@@ -41,10 +41,17 @@ struct CreateProfileView: View {
                   // MARK: - Form Fields
                   VStack(spacing: 20) {
                       TextField("First Name*", text: $vm.firstName)
-                          .modifier(CustomTextFieldStyle())
-                      
-                      TextField("Last Name*", text: $vm.lastName)
-                          .modifier(CustomTextFieldStyle())
+                           .modifier(CustomTextFieldStyle())
+                          .onChange(of: vm.firstName) { newValue in
+                              // keep only A–Z or a–z
+                              vm.firstName = String(newValue.filter { $0.isLetter })
+                          }
+
+                       TextField("Last Name*", text: $vm.lastName)
+                           .modifier(CustomTextFieldStyle())
+                         .onChange(of: vm.lastName) { newValue in
+                             vm.lastName = String(newValue.filter { $0.isLetter })
+                          }
 
                       // MARK: - Username Section
                       VStack(alignment: .leading, spacing: 5) {
