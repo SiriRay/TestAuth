@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct DataDeletionView: View {
-    @StateObject private var viewModel = DataDeletionViewModel()
+struct PermDeleteAccView: View {
+    @StateObject private var viewModel = PermDeleteAccViewModel()
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -43,17 +43,18 @@ struct DataDeletionView: View {
             Button("OK") {
                 viewModel.errorMessage = nil
             }
-        } message: {
-            if let error = viewModel.errorMessage {
-                Text(error)
+
+            } message: {
+                if let error = viewModel.errorMessage {
+                    Text(error)
+                }
             }
-        }
-        .onChange(of: viewModel.didCompleteDataDeletion) { completed in
-            if completed {
-                // Navigate back to login/onboarding
-                dismiss()
+            .onChange(of: viewModel.didCompleteDataDeletion) {
+                if viewModel.didCompleteDataDeletion {
+                    // Navigate back to login/onboarding
+                    dismiss()
+                }
             }
-        }
     }
     
     private var header: some View {
@@ -177,5 +178,5 @@ struct DataDeletionView: View {
 }
 
 #Preview {
-    DataDeletionView()
+    PermDeleteAccView()
 }

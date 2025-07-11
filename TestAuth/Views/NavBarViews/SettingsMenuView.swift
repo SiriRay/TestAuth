@@ -22,7 +22,7 @@ struct SettingsMenuView: View {
             NavBarLists("Help") { /*…*/ }
         }
         .sheet(isPresented: $showDataDeletionView) {
-            DataDeletionView()
+            PermDeleteAccView()
         }
     }
 }

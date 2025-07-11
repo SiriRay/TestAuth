@@ -21,18 +21,24 @@ struct EditProfileView: View {
             )
             .padding(.vertical, 15)
 
-            VStack(spacing: 20) {
-                TextField("First Name*", text: $vm.firstName)
-                  .modifier(CustomTextFieldStyle())
-                 .onChange(of: vm.firstName) { newValue in
-                     vm.firstName = String(newValue.filter { $0.isLetter })
-                 }
+              VStack(spacing: 20) {
+                  TextField("First Name*", text: $vm.firstName)
+                    .modifier(CustomTextFieldStyle())
+                   .onChange(of: vm.firstName) { _, newValue in
+                       let filtered = String(newValue.filter { $0.isLetter })
+                       if vm.firstName != filtered {
+                           vm.firstName = filtered
+                       }
+                   }
 
-                TextField("Last Name*", text: $vm.lastName)
-                  .modifier(CustomTextFieldStyle())
-                 .onChange(of: vm.lastName) { newValue in
-                     vm.lastName = String(newValue.filter { $0.isLetter })
-               }
+                  TextField("Last Name*", text: $vm.lastName)
+                    .modifier(CustomTextFieldStyle())
+                   .onChange(of: vm.lastName) { _, newValue in
+                       let filtered = String(newValue.filter { $0.isLetter })
+                       if vm.lastName != filtered {
+                           vm.lastName = filtered
+                       }
+                 }
 
 
               VStack(alignment: .leading, spacing: 5) {

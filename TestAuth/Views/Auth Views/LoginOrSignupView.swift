@@ -70,23 +70,28 @@ struct LoginOrSignupView: View {
       // ─── SIX-BOX OTP INPUT ──────────────────────────────────────────
       ZStack {
         // Hidden text field
-        TextField("", text: $otpCode)
-          .keyboardType(.numberPad)
-          .textContentType(.oneTimeCode)
-          .focused($isOTPFieldFocused)
-          .onChange(of: otpCode) { newValue in
-            // keep digits only, max 6
-            let filtered = newValue.filter { $0.isNumber }
-            let truncated = String(filtered.prefix(6))
-            if truncated != otpCode { otpCode = truncated }
-            vm.verificationCode = otpCode
-            if otpCode.count == 6 {
-              isOTPFieldFocused = false
+          // In LoginOrSignupView -> body -> ZStack for OTP input
+
+          // Hidden text field
+          TextField("", text: $otpCode)
+            .keyboardType(.numberPad)
+            .textContentType(.oneTimeCode)
+            .focused($isOTPFieldFocused)
+            .onChange(of: otpCode) {
+              // keep digits only, max 6
+              let filtered = otpCode.filter { $0.isNumber }
+              let truncated = String(filtered.prefix(6))
+              if truncated != otpCode {
+                  otpCode = truncated
+              }
+              vm.verificationCode = truncated // Use the sanitized value
+              if truncated.count == 6 {
+                isOTPFieldFocused = false
+              }
             }
-          }
-          .accentColor(.clear)
-          .foregroundColor(.clear)
-          .disabled(!vm.isVerificationSent)
+            .accentColor(.clear)
+            .foregroundColor(.clear)
+            .disabled(!vm.isVerificationSent)
 
         // Visible boxes
         HStack(spacing: 12) {

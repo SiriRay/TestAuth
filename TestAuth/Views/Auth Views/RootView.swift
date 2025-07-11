@@ -64,7 +64,7 @@ struct RootView: View {
                     isAuthenticated   = false
                     showCreateProfile = false
                     return
-                }
+                } 
                 Firestore.firestore()
                     .collection("users")
                     .document(phone)
@@ -80,22 +80,22 @@ struct RootView: View {
             }
         }
         // 3️⃣ If you back-out of CreateProfile early, delete the auth user completely
-        .onChange(of: showCreateProfile) { newValue in
-            if newValue == false
-               && isAuthenticated == false
-               && Auth.auth().currentUser != nil {
-                deleteAuthUserCompletely()
-            }
-        }
-        // 4️⃣ If you background/close the app while still in CreateProfile, delete the auth user too
-        .onChange(of: scenePhase) { phase in
-            if phase == .background,
-               showCreateProfile && !isAuthenticated,
-               Auth.auth().currentUser != nil {
-                deleteAuthUserCompletely()
-            }
-        }
-    }
+        .onChange(of: showCreateProfile) {
+                   if showCreateProfile == false
+                      && isAuthenticated == false
+                      && Auth.auth().currentUser != nil {
+                       deleteAuthUserCompletely()
+                   }
+               }
+               // 4️⃣ Update onChange to use the new two-parameter syntax
+               .onChange(of: scenePhase) { _, newPhase in
+                   if newPhase == .background,
+                      showCreateProfile && !isAuthenticated,
+                      Auth.auth().currentUser != nil {
+                       deleteAuthUserCompletely()
+                   }
+               }
+           }
     
     // Helper function to completely delete the Firebase Auth user
     private func deleteAuthUserCompletely() {

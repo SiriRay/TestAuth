@@ -20,7 +20,7 @@ import FirebaseStorage
 import Combine
 
 /// Handles permanent deletion of user data from all Firebase services
-class DataDeletionViewModel: ObservableObject {
+class PermDeleteAccViewModel: ObservableObject {
     // MARK: - UI State
     @Published var isDeleting = false
     @Published var errorMessage: String?
