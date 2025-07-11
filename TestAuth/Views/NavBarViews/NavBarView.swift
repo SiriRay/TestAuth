@@ -4,7 +4,8 @@ struct NavBarView: View {
     @Binding var isOpen: Bool
     let logoutAction: () async throws -> Void
 
-    @State private var showLogoutPopup = false
+    @State private var showLogoutPopup    = false
+    @State private var showEditProfile    = false
     private var menuWidth: CGFloat { UIScreen.main.bounds.width * 0.7 }
 
     var body: some View {
@@ -29,8 +30,13 @@ struct NavBarView: View {
                         }
                     }
 
-                    // your nav items
-                    NavBarLists("Edit Profile")    { /* … */ }
+                    // ───── YOUR NAV ITEMS ─────
+                    NavBarLists("Edit Profile") {
+                        withAnimation {
+                            showEditProfile = true
+                            isOpen = false
+                        }
+                    }
                     NavBarLists("Friends")         { /* … */ }
                     NavBarLists("Friend Requests") { /* … */ }
                     NavBarLists("Bracelet")        { /* … */ }
@@ -47,35 +53,37 @@ struct NavBarView: View {
                 .padding(.horizontal, 25)
                 .frame(width: menuWidth)
                 .background(Color.white)
-                // animate only this offset
                 .offset(x: isOpen ? 0 : menuWidth)
             }
 
             // 3) centered logout confirmation popup
             if showLogoutPopup {
-                // a stronger scrim behind the popup
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
                     .onTapGesture { showLogoutPopup = false }
 
                 LogoutAlertView(
-                    confirmAction: {
-                        Task {
-                            defer {
-                                withAnimation {
-                                    showLogoutPopup = false
-                                    isOpen = false
-                                }
-                            }
-                            do { try await logoutAction() }
-                            catch { print("Logout error:", error) }
+                  confirmAction: {
+                    Task {
+                      defer {
+                        withAnimation {
+                          showLogoutPopup = false
+                          isOpen = false
                         }
-                    },
-                    cancelAction: {
-                        withAnimation { showLogoutPopup = false }
+                      }
+                      do { try await logoutAction() }
+                      catch { print("Logout error:", error) }
                     }
+                  },
+                  cancelAction: {
+                    withAnimation { showLogoutPopup = false }
+                  }
                 )
             }
+        }
+        // PRESENT EDIT‐PROFILE SHEET
+        .sheet(isPresented: $showEditProfile) {
+            EditProfileView(isPresented: $showEditProfile)
         }
     }
 }
@@ -84,8 +92,7 @@ private struct NavBarLists: View {
     let title: String
     let action: () -> Void
 
-    init(_ title: String,
-         action: @escaping () -> Void) {
+    init(_ title: String, action: @escaping () -> Void) {
         self.title = title
         self.action = action
     }

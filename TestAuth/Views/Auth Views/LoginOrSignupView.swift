@@ -100,9 +100,10 @@ struct LoginOrSignupView: View {
             }
         }
       }
-      .onChange(of: vm.isVerificationSent) { sent in
-        focusedIndex = sent ? 0 : nil
+      .onChange(of: vm.isVerificationSent) {
+          focusedIndex = vm.isVerificationSent ? 0 : nil
       }
+
 
       // ─── Verify button ──────────────────────────────────────────────
       Button("Verify") {

@@ -41,12 +41,12 @@ struct RootView: View {
         }
       }
       // 2️⃣ Also listen for sign-out
-      Auth.auth().addStateDidChangeListener { _, user in
-        if user == nil {
-          isAuthenticated = false
-          showCreateProfile = false
+        _ = Auth.auth().addStateDidChangeListener { _, user in
+            if user == nil {
+                isAuthenticated = false
+                showCreateProfile = false
+            }
         }
-      }
     }
   }
 }

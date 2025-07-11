@@ -52,9 +52,10 @@ class AuthViewModel: ObservableObject {
         return
       }
 
-      guard let phone = Auth.auth().currentUser?.phoneNumber else {
-        self.errorMessage = "Unable to retrieve your verified phone."
-        return
+        guard let phone = Auth.auth().currentUser?.phoneNumber,
+              !phone.isEmpty else {
+          self.errorMessage = "Unable to retrieve your verified phone."
+          return
       }
 
       let db = Firestore.firestore()

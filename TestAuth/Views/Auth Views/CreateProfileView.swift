@@ -102,12 +102,13 @@ struct CreateProfileView: View {
       .sheet(isPresented: $vm.showImagePicker) {
           ImagePickerView(image: $vm.profileImage)
       }
-      .onChange(of: vm.didSaveProfile) { success in
-          if success {
+      .onChange(of: vm.didSaveProfile) {
+          if vm.didSaveProfile {
               isAuthenticated   = true
               showCreateProfile = false
           }
       }
+
   }
 
     // --- START OF UPDATED BLOCK ---
