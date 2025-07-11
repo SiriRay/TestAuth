@@ -64,42 +64,79 @@ class EditProfileViewModel: ObservableObject {
     setupDebouncedUsernameCheck()
     setupSuggestionGenerator()
   }
+    // MARK: — Local file-cache helpers
+    private func profileImageCacheURL() -> URL? {
+      let fm = FileManager.default
+      guard let dir = fm.urls(for: .cachesDirectory, in: .userDomainMask).first,
+            let uid = Auth.auth().currentUser?.uid
+      else { return nil }
+      return dir.appendingPathComponent("profile_\(uid).jpg")
+    }
 
-  private func loadUserProfile() {
+    private func loadCachedProfileImage() -> UIImage? {
+      guard let url = profileImageCacheURL(),
+            let data = try? Data(contentsOf: url)
+      else { return nil }
+      return UIImage(data: data)
+    }
+
+    private func saveImageToCache(data: Data) {
+      guard let url = profileImageCacheURL() else { return }
+      try? data.write(to: url, options: .atomic)
+    }
+
+
+    private func loadUserProfile() {
       guard let phone = Auth.auth().currentUser?.phoneNumber,
             !phone.isEmpty else {
         print("✋ no authenticated user; skipping loadUserProfile")
         return
       }
       let docRef = db.collection("users").document(phone)
-    docRef.getDocument { [weak self] snap, _ in
-      guard let self = self, let data = snap?.data() else { return }
-      // stash originals
-      self.originalFirstName  = data["firstName"] as? String ?? ""
-      self.originalLastName   = data["lastName"]  as? String ?? ""
-      let uname               = data["username"]  as? String ?? ""
-      self.originalUsername   = uname.lowercased()
-      self.originalProfileURL = data["profileURL"] as? String
 
-      DispatchQueue.main.async {
-        // populate form
-        self.firstName = self.originalFirstName
-        self.lastName  = self.originalLastName
-        self.username  = self.originalUsername
-      }
+      // fires immediately with cached data, then again with server data
+      docRef.addSnapshotListener { [weak self] snap, error in
+        guard let self = self,
+              let data = snap?.data(),
+              !data.isEmpty else { return }
 
-      // download profile image
-      if let urlString = self.originalProfileURL,
-         let url = URL(string: urlString) {
-        let ref = self.storage.reference(forURL: url.absoluteString)
-        ref.getData(maxSize: 5 * 1024 * 1024) { data, _ in
-          if let data = data {
-            DispatchQueue.main.async { self.profileImage = UIImage(data: data) }
+        // stash originals
+        self.originalFirstName  = data["firstName"]  as? String ?? ""
+        self.originalLastName   = data["lastName"]   as? String ?? ""
+        let uname               = data["username"]   as? String ?? ""
+        self.originalUsername   = uname.lowercased()
+        self.originalProfileURL = data["profileURL"] as? String
+
+        DispatchQueue.main.async {
+          // populate text fields right away
+          self.firstName = self.originalFirstName
+          self.lastName  = self.originalLastName
+          self.username  = self.originalUsername
+
+          // **1️⃣** try to load the last-downloaded image from disk (instant!)
+          if let img = self.loadCachedProfileImage() {
+            self.profileImage = img
+          }
+        }
+
+        // **2️⃣** then fetch the fresh image from Storage and overwrite + cache
+        if let urlString = self.originalProfileURL,
+           let url = URL(string: urlString) {
+          let ref = self.storage.reference(forURL: url.absoluteString)
+          ref.getData(maxSize: 5 * 1024 * 1024) { data, _ in
+            guard let data = data,
+                  let image = UIImage(data: data)
+            else { return }
+            DispatchQueue.main.async {
+              self.profileImage = image
+            }
+            // save for next time
+            self.saveImageToCache(data: data)
           }
         }
       }
     }
-  }
+
 
   private func setupDebouncedUsernameCheck() {
     $username
