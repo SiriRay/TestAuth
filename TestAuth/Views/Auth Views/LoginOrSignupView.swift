@@ -12,19 +12,15 @@ struct LoginOrSignupView: View {
   // Fixed width for all components
   private let componentWidth: CGFloat = 325
 
-  // MARK: – Six-digit input state
-  @State private var codeDigits = Array(repeating: "", count: 6)
-  @FocusState private var focusedIndex: Int?
-
-  private func updateVMCode() {
-    vm.verificationCode = codeDigits.joined()
-  }
+  // MARK: – Single hidden OTP field
+  @State private var otpCode: String = ""
+  @FocusState private var isOTPFieldFocused: Bool
 
   var body: some View {
     VStack(spacing: 20) {
       // ─── HEADER ───────────────────────────────────────────────────────
       Text("Login or Signup")
-            .font(.title2).fontWeight(.semibold).multilineTextAlignment(.center).bold().padding(25.0)
+        .font(.title2).fontWeight(.semibold).multilineTextAlignment(.center).bold().padding(25.0)
 
       // ─── Phone number + Send/Resend OTP ─────────────────────────────
       VStack(alignment: .leading, spacing: 7) {
@@ -67,49 +63,61 @@ struct LoginOrSignupView: View {
         .frame(width: componentWidth)
       }
 
-      // ─── Six-box OTP input ──────────────────────────────────────────
-      HStack(spacing: 12) {
-        ForEach(0..<6) { i in
-          TextField("", text: $codeDigits[i])
-            .keyboardType(.numberPad)
-            .multilineTextAlignment(.center)
-            .focused($focusedIndex, equals: i)
-            .frame(width: 44, height: 44)
-            .background(Color(.systemGray6))
-            .cornerRadius(8)
+      // ─── SIX-BOX OTP INPUT ──────────────────────────────────────────
+      ZStack {
+        // Hidden text field
+        TextField("", text: $otpCode)
+          .keyboardType(.numberPad)
+          .textContentType(.oneTimeCode)
+          .focused($isOTPFieldFocused)
+          .onChange(of: otpCode) { newValue in
+            // keep digits only, max 6
+            let filtered = newValue.filter { $0.isNumber }
+            let truncated = String(filtered.prefix(6))
+            if truncated != otpCode { otpCode = truncated }
+            vm.verificationCode = otpCode
+            if otpCode.count == 6 {
+              isOTPFieldFocused = false
+            }
+          }
+          .accentColor(.clear)
+          .foregroundColor(.clear)
+          .disabled(!vm.isVerificationSent)
+
+        // Visible boxes
+        HStack(spacing: 12) {
+          ForEach(0..<6) { i in
+            ZStack {
+              RoundedRectangle(cornerRadius: 8)
+                .fill(Color(.systemGray6))
+                .frame(width: 44, height: 44)
+              Text(character(at: i))
+                .font(.title2)
+            }
             .disabled(!vm.isVerificationSent)
             .opacity(vm.isVerificationSent ? 1 : 0.5)
-            .onChange(of: codeDigits[i]) { oldValue, newValue in
-              // Handle input (typing)
-              if newValue.count > 1 {
-                codeDigits[i] = String(newValue.suffix(1))
-              }
-              
-              // Handle backspace (deletion)
-              if newValue.isEmpty && !oldValue.isEmpty {
-                // User deleted content, move to previous box
-                if i > 0 {
-                  focusedIndex = i - 1
-                }
-              } else if codeDigits[i].count == 1 {
-                // User entered a digit, move to next box
-                focusedIndex = (i < 5 ? i + 1 : nil)
-              }
-              
-              updateVMCode()
-            }
+          }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+          guard vm.isVerificationSent else { return }
+          isOTPFieldFocused = true
         }
       }
-      .onChange(of: vm.isVerificationSent) {
-          focusedIndex = vm.isVerificationSent ? 0 : nil
+      .frame(width: 325.0, height: 44)
+      .onChange(of: vm.isVerificationSent) { sent in
+        if sent {
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            isOTPFieldFocused = true
+          }
+        }
       }
-
 
       // ─── Verify button ──────────────────────────────────────────────
       Button("Verify") {
         vm.verifyCode()
       }
-      .disabled(!vm.isVerificationSent || vm.verificationCode.count < 6)
+      .disabled(!vm.isVerificationSent || otpCode.count < 6)
       .buttonStyle(.borderedProminent)
       .tint(Color.pink)
       .frame(width: componentWidth, height: 44)
@@ -141,6 +149,12 @@ struct LoginOrSignupView: View {
 
   private func startTimer() {
     remainingSeconds = 30
+  }
+
+  private func character(at index: Int) -> String {
+    guard index < otpCode.count else { return "" }
+    let idx = otpCode.index(otpCode.startIndex, offsetBy: index)
+    return String(otpCode[idx])
   }
 }
 
