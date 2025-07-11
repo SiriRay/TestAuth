@@ -19,7 +19,7 @@ struct MainDashboardView: View {
                 .disabled(isMenuOpen)
 
                 // — Side Menu Overlay —
-                SideMenuView(isOpen: $isMenuOpen, logoutAction: logout)
+                NavBarView(isOpen: $isMenuOpen, logoutAction: logout)
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
