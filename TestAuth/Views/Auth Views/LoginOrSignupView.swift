@@ -5,6 +5,10 @@ struct LoginOrSignupView: View {
   @Binding var showCreateProfile: Bool
   @StateObject private var vm = AuthViewModel()
 
+  // MARK: – Cursor Blinking
+  @State private var isCursorBlinking = false
+  private let blinkTimer = Timer.publish(every: 0.6, on: .main, in: .common).autoconnect()
+
   // MARK: – Resend timer
   @State private var remainingSeconds = 0
   private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -44,15 +48,15 @@ struct LoginOrSignupView: View {
             Text(
               vm.isVerificationSent
                 ? (remainingSeconds > 0
-                    ? "Resend OTP in \(remainingSeconds)s"
-                    : "Resend OTP")
+                  ? "Resend OTP in \(remainingSeconds)s"
+                  : "Resend OTP")
                 : "Send OTP"
             )
             .underline()
           }
           .disabled(
             vm.phoneNumber.count < 10 ||
-            (vm.isVerificationSent && remainingSeconds > 0)
+              (vm.isVerificationSent && remainingSeconds > 0)
           )
           .foregroundColor(
             (vm.isVerificationSent && remainingSeconds > 0)
@@ -93,6 +97,14 @@ struct LoginOrSignupView: View {
                 .frame(width: 44, height: 44)
               Text(character(at: i))
                 .font(.title2)
+
+              // Blinking Cursor
+              if i == otpCode.count && isOTPFieldFocused {
+                Rectangle()
+                  .frame(width: 2, height: 24)
+                  .foregroundColor(.pink)
+                  .opacity(isCursorBlinking ? 1 : 0)
+              }
             }
             .disabled(!vm.isVerificationSent)
             .opacity(vm.isVerificationSent ? 1 : 0.5)
@@ -136,8 +148,12 @@ struct LoginOrSignupView: View {
         remainingSeconds -= 1
       }
     }
+    .onReceive(blinkTimer) { _ in
+        isCursorBlinking.toggle()
+    }
     .onDisappear {
       timer.upstream.connect().cancel()
+      blinkTimer.upstream.connect().cancel()
     }
     .onChange(of: vm.didAuthenticate) { _, newValue in
       isAuthenticated = newValue
