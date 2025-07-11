@@ -22,7 +22,7 @@ struct CustomTextFieldStyle: ViewModifier {
 struct CreateProfileView: View {
   @Binding var showCreateProfile: Bool
   @Binding var isAuthenticated: Bool
-  @StateObject private var vm = ProfileViewModel()
+  @StateObject private var vm = CreateProfileViewModel()
 
   var body: some View {
       ZStack {
@@ -106,6 +106,19 @@ struct CreateProfileView: View {
               .padding(.bottom, 15)
           }
       }
+      // ─── BACK BUTTON OVERLAY ─────────────────────────────────────────
+      .overlay(
+        Button(action: {
+          showCreateProfile = false
+        }) {
+          HStack(spacing: 4) {
+            Image(systemName: "chevron.left")
+            Text("Back")
+          }
+          .padding(12)
+        },
+        alignment: .topLeading
+      )
       .sheet(isPresented: $vm.showImagePicker) {
           ImagePickerView(image: $vm.profileImage)
       }
@@ -115,7 +128,6 @@ struct CreateProfileView: View {
               showCreateProfile = false
           }
       }
-
   }
 
     // --- START OF UPDATED BLOCK ---
@@ -191,12 +203,11 @@ struct ProfileImagePicker: View {
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.white)
                 }
-                .offset(x: 2, y: 2) // Adjust to position correctly on the border
+                .offset(x: 2, y: 2)
             }
         }
     }
 }
-
 
 #Preview {
     CreateProfileView(

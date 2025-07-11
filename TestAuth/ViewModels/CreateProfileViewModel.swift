@@ -11,7 +11,7 @@ import FirebaseFirestore
 import Combine
 
 /// Handles picking & uploading profile + Firestore write
-class ProfileViewModel: ObservableObject {
+class CreateProfileViewModel: ObservableObject {
   // MARK: — Inputs
   @Published var firstName    = ""
   @Published var lastName     = ""
