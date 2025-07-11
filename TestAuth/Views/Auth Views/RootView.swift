@@ -79,28 +79,39 @@ struct RootView: View {
                     }
             }
         }
-        // 3️⃣ If you back-out of CreateProfile early, sign you out immediately
+        // 3️⃣ If you back-out of CreateProfile early, delete the auth user completely
         .onChange(of: showCreateProfile) { newValue in
             if newValue == false
                && isAuthenticated == false
                && Auth.auth().currentUser != nil {
+                deleteAuthUserCompletely()
+            }
+        }
+        // 4️⃣ If you background/close the app while still in CreateProfile, delete the auth user too
+        .onChange(of: scenePhase) { phase in
+            if phase == .background,
+               showCreateProfile && !isAuthenticated,
+               Auth.auth().currentUser != nil {
+                deleteAuthUserCompletely()
+            }
+        }
+    }
+    
+    // Helper function to completely delete the Firebase Auth user
+    private func deleteAuthUserCompletely() {
+        guard let user = Auth.auth().currentUser else { return }
+        
+        user.delete { error in
+            if let error = error {
+                print("❌ Error deleting auth user:", error.localizedDescription)
+                // If deletion fails, still try to sign out as fallback
                 do {
                     try Auth.auth().signOut()
                 } catch {
                     print("❌ Sign-out error:", error.localizedDescription)
                 }
-            }
-        }
-        // 4️⃣ If you background/close the app while still in CreateProfile, sign you out too
-        .onChange(of: scenePhase) { phase in
-            if phase == .background,
-               showCreateProfile && !isAuthenticated,
-               Auth.auth().currentUser != nil {
-                do {
-                    try Auth.auth().signOut()
-                } catch {
-                    print("❌ Sign-out error on background:", error.localizedDescription)
-                }
+            } else {
+                print("✅ Auth user deleted successfully")
             }
         }
     }
